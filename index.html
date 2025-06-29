@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Allgemeine Psychologie</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#007BFF" />
+  <link rel="icon" href="icon-192.png" type="image/png" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker registriert'))
+        .catch(err => console.error('Fehler beim Registrieren:', err));
+    }
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1em;
+      max-width: 600px;
+      margin: auto;
+      font-size: 1.1em;
+      line-height: 1.5;
+    }
+    .question {
+      margin-bottom: 1.5em;
+    }
+    .question h3 {
+      margin-bottom: 0.5em;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5em;
+    }
+    input[type="radio"] {
+      transform: scale(1.3);
+      margin-right: 0.5em;
+    }
+    button {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 1em;
+      padding: 0.75em;
+      font-size: 1.1em;
+      border: none;
+      background-color: #007BFF;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #aaa;
+      cursor: default;
+    }
+    .result {
+      margin-top: 1.5em;
+      font-weight: bold;
+    }
+    .page {
+      display: none;
+    }
+    .page.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Quiz: Allgemeine Psychologie</h1>
+  <div id="quiz-container"></div>
+  <script>
+    const quizPages = [
+      [
+        { question: "Was fördert laut GuPF-Modell intrinsische Motivation?", options: ["Kontrolle durch Vorgesetzte","Ganzheitlichkeit, Unmittelbarkeit, Personenbezug, Förderlichkeit","Leistungsdruck und externe Belohnungen","Routinetätigkeiten ohne Feedback"], correct: 1 },
+        { question: "Was ist ein zentrales Merkmal teilautonomer Arbeitsgruppen?", options: ["Sie führen nur monotone Einzelaufgaben aus","Sie werden streng von außen gesteuert","Sie übernehmen selbst Verantwortung für Planung und Kontrolle","Sie sind ausschließlich virtuell organisiert"], correct: 2 },
+        { question: "Welches Motiv gehört nicht zu McClellands Theorie?", options: ["Leistungsmotiv","Anschlussmotiv","Selbstverwirklichungsmotiv","Machtmotiv"], correct: 2 },
+        { question: "Was bedeutet 'prospektive Arbeitsgestaltung'?", options: ["Probleme werden im Nachhinein korrigiert","Belastungen werden kurzfristig gemessen","Es geht um die Förderung von Entwicklung und Gesundheit","Es werden nur Symptome behandelt"], correct: 2 },
+        { question: "Was ist typisch für den Führungsstil 'Überzeugen (selling)' im Reifegradmodell?", options: ["Mitarbeiter bekommen keine Erklärung","Die Führungskraft gibt nur Befehle","Die Führungskraft begründet und motiviert Aufgaben","Führung wird komplett abgegeben"], correct: 2 },
+        { question: "Was meint 'kairologische Führung'?", options: ["Führung nach der Uhrzeit","Kontrolle durch Zeitpläne","Nutzung des richtigen Moments für wirksames Handeln","Lenkung durch Hierarchie"], correct: 2 }
+      ],
+      [
+        { question: "Was beschreibt das 9.9-Führungsmodell (Managerial Grid)?", options: ["Es zeigt die Balance zwischen Lohn und Kontrolle","Es verknüpft emotionale Intelligenz mit Fachwissen","Es kombiniert hohe Mitarbeiter- und hohe Aufgabenorientierung","Es beschreibt ein autoritäres Führungsprinzip"], correct: 2 },
+        { question: "Welche Emotion gehört laut Paul Ekman zu den Basisemotionen?", options: ["Stolz","Hoffnung","Verachtung","Neid"], correct: 2 },
+        { question: "Welche Theorie stammt von Schachter & Singer?", options: ["Zwei-Faktoren-Theorie der Emotion","Triebtheorie der Emotion","James-Lange-Theorie","Bedürfnispyramide"], correct: 0 },
+        { question: "Was beschreibt die kognitive Komponente der Zwei-Faktoren-Theorie?", options: ["Muskelanspannung","Reizaufnahme","Bewertung der Situation","Biochemische Prozesse"], correct: 2 },
+        { question: "Was ist laut GuPF-Modell ein Schutzfaktor gegen Burnout?", options: ["Routinetätigkeit","Ganzheitlichkeit","Kontrolle durch andere","Zeitdruck"], correct: 1 },
+        { question: "Welche Instanz nach Freud folgt dem Lustprinzip?", options: ["Ich","Über-Ich","Es","Selbst"], correct: 2 }
+      ],
+      [
+        { question: "Welche Funktion hat das Ich im Freud’schen Instanzenmodell?", options: ["Moralischer Richter","Quelle der Triebe","Vermittler zwischen Es, Über-Ich und Realität","Unbewusstes Zentrum"], correct: 2 },
+        { question: "In welcher Phase der psychosexuellen Entwicklung wird laut Freud der Ödipuskomplex durchlebt?", options: ["Orale Phase","Anale Phase","Phallische Phase","Latenzphase"], correct: 2 },
+        { question: "Welche Phase folgt bei Freud auf die phallische Phase?", options: ["Genitale Phase","Latenzphase","Anale Phase","Selbstverwirklichung"], correct: 1 },
+        { question: "Was bedeutet, dass die Allgemeine Psychologie nomothetisch arbeitet?", options: ["Sie beschreibt Einzelfälle detailliert","Sie ist nicht empirisch","Sie sucht allgemeingültige Gesetzmäßigkeiten","Sie analysiert Einzelfallbiografien"], correct: 2 },
+        { question: "Was unterscheidet wissenschaftliche Psychologie von Alltagspsychologie?", options: ["Die wissenschaftliche Psychologie basiert auf Intuition","Die Alltagspsychologie ist präziser und verlässlicher","Die wissenschaftliche Psychologie arbeitet systematisch, empirisch und überprüfbar","Beide arbeiten gleich"], correct: 2 },
+        { question: "Was ist ein Merkmal der Alltagspsychologie?", options: ["Theoretische Fundierung","Empirische Überprüfbarkeit","Objektivität","Subjektivität und Intuition"], correct: 3 }
+      ],
+      [
+        { question: "Was ist ein zentrales Merkmal des 'Spitzenmodells' der Führung?", options: ["Gleichrangige Verantwortung aller Teammitglieder","Zirkuläre Kommunikation","Eine klar definierte Hierarchie mit zentraler Führungskraft","Agile Projektverteilung"], correct: 2 },
+        { question: "Was symbolisiert das 'Kreismodell' der Führung?", options: ["Autoritäre Führung","Entscheidungsmonopole","Dezentralisierung und geteilte Verantwortung","Kontrolle durch mittlere Ebene"], correct: 2 },
+        { question: "Was ist die erste Stufe im Drei-Speicher-Modell des Gedächtnisses?", options: ["Arbeitsgedächtnis","Kurzzeitgedächtnis","Sensorisches Gedächtnis","Langzeitgedächtnis"], correct: 2 },
+        { question: "Wie lange speichert das Kurzzeitgedächtnis Informationen typischerweise?", options: ["Wenige Sekunden","Einige Minuten","Stunden","Tage"], correct: 0 },
+        { question: "Was ist notwendig, damit Informationen ins Langzeitgedächtnis gelangen?", options: ["Ausschließlich Schlaf","Reine Wiederholung ohne Zusammenhang","Enkodierung und Verknüpfung mit bestehenden Inhalten","Ablenkung und Pausen"], correct: 2 },
+        { question: "Welche Gedächtnisstufe hat die größte Speicherkapazität und -dauer?", options: ["Sensorisches Gedächtnis","Arbeitsgedächtnis","Kurzzeitgedächtnis","Langzeitgedächtnis"], correct: 3 }
+      ]
+    ];
+
+    const quizContainer = document.getElementById("quiz-container");
+
+    quizPages.forEach((page, pageIndex) => {
+      const pageDiv = document.createElement("div");
+      pageDiv.className = "page" + (pageIndex === 0 ? " active" : "");
+
+      page.forEach((q, i) => {
+        const qDiv = document.createElement("div");
+        qDiv.className = "question";
+        const qTitle = document.createElement("h3");
+        qTitle.textContent = `${i + 1}. ${q.question}`;
+        qDiv.appendChild(qTitle);
+
+        q.options.forEach((opt, idx) => {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = `page${pageIndex}-q${i}`;
+          input.value = idx;
+          label.appendChild(input);
+          label.appendChild(document.createTextNode(" " + opt));
+          qDiv.appendChild(label);
+        });
+
+        pageDiv.appendChild(qDiv);
+      });
+
+      const button = document.createElement("button");
+      button.textContent = "Auswerten";
+      button.onclick = () => {
+        let correctCount = 0;
+        page.forEach((q, i) => {
+          const selected = document.querySelector(`input[name='page${pageIndex}-q${i}']:checked`);
+          if (selected && parseInt(selected.value) === q.correct) {
+            correctCount++;
+          }
+        });
+        const result = document.createElement("div");
+        result.className = "result";
+        result.textContent = `Du hast ${correctCount} von ${page.length} Fragen richtig.`;
+        pageDiv.appendChild(result);
+        button.disabled = true;
+        const nextPage = quizContainer.querySelectorAll('.page')[pageIndex + 1];
+        if (nextPage) {
+          const nextBtn = document.createElement("button");
+          nextBtn.textContent = "Weiter zur nächsten Seite";
+          nextBtn.onclick = () => {
+            pageDiv.classList.remove("active");
+            nextPage.classList.add("active");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          };
+          pageDiv.appendChild(nextBtn);
+        }
+      };
+      pageDiv.appendChild(button);
+      quizContainer.appendChild(pageDiv);
+    });
+  </script>
+</body>
+</html>
